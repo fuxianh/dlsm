@@ -1,0 +1,52 @@
+name: "EVOLUTION_POLICY"
+
+input: "delta_evl"
+input_shape {dim: 1 dim: 1 dim: 4}
+input: "clip_evl"
+input_shape {dim: 1 dim: 1}
+
+layer {
+  name: "lstm_evl"
+  type: "LSTM"
+  bottom: "delta_evl"
+  bottom: "clip_evl"
+  top: "lstm_evl"
+
+  recurrent_param {
+    num_output: 256
+    weight_filler {
+      type: "uniform"
+      min: -0.01
+      max: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layer {
+  name: "ip_evl"
+  type: "InnerProduct"
+  bottom: "lstm_evl"
+  top: "ip_evl"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 4
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0.1
+    }
+  }
+}
